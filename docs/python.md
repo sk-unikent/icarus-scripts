@@ -15,3 +15,14 @@ Assume the above ran without errors, you should now log out of Icarus and log ba
 You can, instead, type `source .bash_profile` if you'd rather not re-login.
 
 Type `which python`. It should return `~/anaconda/bin/python`.
+
+We just copied a few examples into your home directory, it's nice to start there, even if you already know Python as it gives a bit of an introduction to Slurm.
+Run the example application: `sbatch ~/slurm/examples/cpu.sh`.
+You should (might take some time to be scheduled) have a new log file in `~/slurm/logs/`, cat it to see the result of the application.
+You will also get an email when the job has finished,
+
+Installing new Python packages
+===
+You have `conda` and `pip` at your disposal, both in your own anaconda environment.
+If, say, you want to install Scipy just type `conda install scipy` or `pip install scipy`.
+If you wish to install Tensorflow, please see our special-case docs.
