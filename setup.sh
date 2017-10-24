@@ -4,7 +4,10 @@
 /bin/bash /opt/icarus/Anaconda3-5.0.0.1-Linux-x86_64.sh -b -p $HOME/anaconda
 
 # Setup environment (overwrites .bash* files).
-cp /opt/icarus/env/* ~/
+USERNAME=`logname`
+cp -R /opt/icarus/env/* ~/
+sed -i "s/USERNAME/$USERNAME/g" ~/slurm/templates/cpu.sh
+sed -i "s/USERNAME/$USERNAME/g" ~/slurm/templates/gpu.sh
 
 # Do this here now, rather than sourcing all of that.
 PATH=$HOME/.local/bin:$HOME/anaconda/bin:$HOME/bin:$PATH
