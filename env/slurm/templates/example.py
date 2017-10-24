@@ -2,7 +2,8 @@
 # Example Application
 #
 
-import os
+import socket
 
-homedir = os.environ['HOME']
-print("hello slurm from %s!" % homedir);
+hostname = socket.gethostname()
+
+print("hello slurm from %s!" % hostname);
