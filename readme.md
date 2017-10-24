@@ -1,4 +1,4 @@
 Icarus Docs
 ===
 
-See starthere.md
+See docs/starthere.md

@@ -30,7 +30,7 @@ CPU Application Template
 #SBATCH --job-name=ExampleApplication
 #SBATCH --mail-type=END
 #SBATCH --mail-user=example@kent.ac.uk
-#SBATCH --output=/home/USERNAME/slurm_%j.out
+#SBATCH --output=/home/USERNAME/slurm/logs/%j.out
 python sample.py
 ```
 
@@ -44,6 +44,6 @@ GPU Application Template
 #SBATCH --job-name=ExampleGPUApplication
 #SBATCH --mail-type=END
 #SBATCH --mail-user=example@kent.ac.uk
-#SBATCH --output=/home/USERNAME/slurm_%j.out
+#SBATCH --output=/home/USERNAME/slurm/logs/%j.out
 python sample.py
 ```

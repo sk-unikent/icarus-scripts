@@ -11,4 +11,7 @@ For the purposes of this guide, we're going to keep everything on the versions u
 Run `/bin/bash /opt/icarus/setup.sh`.
 > Note: this will overwrite your .bashrc and .bash_profile scripts, if you have modified these you will want to read through the script and run commands manually.
 
- 
+Assume the above ran without errors, you should now log out of Icarus and log back in.
+You can, instead, type `source .bash_profile` if you'd rather not re-login.
+
+Type `which python`. It should return `~/anaconda/bin/python`.
