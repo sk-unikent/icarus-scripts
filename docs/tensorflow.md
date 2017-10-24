@@ -13,3 +13,5 @@ Run the example:
 ```
 sbatch ~/slurm/examples/tensorflow.sh
 ```
+
+Check the slurm logs for output.
