@@ -5,7 +5,7 @@
 
 # Setup environment (overwrites .bash* files).
 USERNAME=`logname`
-cp -R /opt/icarus/env/* ~/
+cp -R /opt/icarus/env/slurm ~/slurm
 cp -R /opt/icarus/env/.* ~/
 sed -i "s/USERNAME/$USERNAME/g" ~/slurm/examples/cpu.sh
 sed -i "s/USERNAME/$USERNAME/g" ~/slurm/examples/gpu.sh
