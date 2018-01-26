@@ -1,0 +1,8 @@
+version: '2'
+services:
+  icarustest:
+    image: skylarkelty/centos:latest
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - .:/opt/icarus
