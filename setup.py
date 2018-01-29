@@ -194,10 +194,15 @@ def runInit():
     while answer not in options.keys():
         try: answer = int(input('> '))
         except ValueError: pass
-    command = options[answer]['command']
 
-    # Reset the environment, better check first.
+    # Check the answer.
+    if answer not in options:
+        return
+
+    # Execute the command.
+    command = options[answer]['command']
     if command == 'resetEnvironment':
+        # Reset the environment, better check first.
         answer = input('Warning! This will delete everything in your home directory and you will not be able to get it back! are you sure? (yes/no) ')
         if answer == 'yes':
             globalstate = resetEnvironment(globalstate)
