@@ -16,8 +16,8 @@ import subprocess
 home = os.path.expanduser("~")
 scriptpath = os.path.dirname(os.path.realpath(__file__))
 scriptvers = '2.0'
-basicenvvers = '0.2.1'
 supportedpackages = {
+    'base': '0.2.2',
     'python': '3.6.4',
     'tensorflow': '1.5.0',
     'julia': '0.6.2',
@@ -45,9 +45,22 @@ def replaceUsernameInExamples():
         subprocess.call(['sed', '-i', "s/USERNAME/%s/g" % username, filename])
 
 # Basic Kent environment setup.
-def ensureBasicEnvironment(globalstate):
-    if 'basesetup' in globalstate and globalstate['basesetup'] == basicenvvers:
-        return globalstate
+def upgradeBase(globalstate):
+    print('Upgrading basic environment...')
+
+    if globalstate['installed']['base'] < '0.2.2':
+        # Add new upgrade check script.
+        subprocess.call(['cp', scriptpath + '/env/.bash_updates', home + '/.config/kent/shellext/'])
+
+    globalstate['installed']['base'] = supportedpackages['base']
+    return globalstate
+
+# Basic Kent environment setup.
+def installBase(globalstate):
+    if 'base' in globalstate['installed']:
+        if globalstate['installed']['base'] == supportedpackages['base']:
+            return globalstate
+        return upgradeBase(globalstate)
 
     print('Setting up basic environment...')
 
@@ -63,7 +76,7 @@ def ensureBasicEnvironment(globalstate):
     subprocess.call(['cp', '-R', scriptpath + '/env/slurm/examples/basic', home + '/slurm/examples/'])
     replaceUsernameInExamples()
 
-    globalstate['basesetup'] = basicenvvers
+    globalstate['installed']['base'] = supportedpackages['base']
     return globalstate
 
 # Install Python.
@@ -78,7 +91,7 @@ def installPython(globalstate):
     subprocess.call(['cp', '-R', scriptpath + '/env/slurm/examples/python', home + '/slurm/examples/'])
     replaceUsernameInExamples()
 
-    globalstate['python'] = supportedpackages['python']
+    globalstate['installed']['python'] = supportedpackages['python']
     return globalstate
 
 # Install Tensorflow.
@@ -97,7 +110,7 @@ def installTensorflow(globalstate):
     subprocess.call(['cp', '-R', scriptpath + '/env/slurm/examples/tensorflow', home + '/slurm/examples/'])
     replaceUsernameInExamples()
 
-    globalstate['tensorflow'] = supportedpackages['tensorflow']
+    globalstate['installed']['tensorflow'] = supportedpackages['tensorflow']
     return globalstate
 
 # Install Julia.
@@ -114,7 +127,7 @@ def installJulia(globalstate):
     subprocess.call(['cp', '-R', scriptpath + '/env/slurm/examples/julia', home + '/slurm/examples/'])
     replaceUsernameInExamples()
 
-    globalstate['julia'] = supportedpackages['julia']
+    globalstate['installed']['julia'] = supportedpackages['julia']
     return globalstate
 
 # Install R.
@@ -140,7 +153,7 @@ def installR(globalstate):
 def readEnvState():
     if not os.path.isfile(home + '/.config/kent/env.json'):
         return {'version': scriptvers, 'installed': {}}
-    return json.load(open(home + '/.config/kent/env.json'))
+    return json.load(open(home + '/.config/kent/env.json', 'r'))
 
 # Save our environment's state.
 def saveEnvState(state):
@@ -155,10 +168,14 @@ def runInit():
     # First, decide what we have already installed.
     globalstate = readEnvState()
     installoptions = [pkg.title() for pkg in supportedpackages.keys() if pkg not in globalstate['installed'].keys()]
+    upgrades = [pkg.title() for pkg in globalstate['installed'].keys() if globalstate['installed'][pkg] != supportedpackages[pkg]]
 
     # Build an options table.
     i = 1
     options = {}
+    for pkg in upgrades:
+        options[i] = {'name': pkg, 'type': 'Upgrade', 'command': "upgrade%s" % pkg}
+        i += 1
     for pkg in installoptions:
         options[i] = {'name': pkg, 'type': 'Install', 'command': "install%s" % pkg}
         i += 1
@@ -190,9 +207,9 @@ def runInit():
         else:
             runInit()
             return
-    elif options[answer]['type'] == 'Install':
+    elif options[answer]['type'] == 'Install' or options[answer]['type'] == 'Upgrade':
         # Make sure we always have the basic environment setup.
-        globalstate = ensureBasicEnvironment(globalstate)
+        globalstate = installBase(globalstate)
         saveEnvState(globalstate)
 
         # Now setup our tool.
