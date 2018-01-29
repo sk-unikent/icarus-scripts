@@ -7,4 +7,4 @@
 #SBATCH --mail-user=USERNAME@kent.ac.uk
 #SBATCH --output=/home/USERNAME/slurm/logs/%j.out
 
-python /home/USERNAME/slurm/examples/example.py
+python /home/USERNAME/slurm/examples/python/example.py

@@ -21,6 +21,7 @@ supportedpackages = {
     'python': '3.6.4',
     'tensorflow': '1.5.0',
     'julia': '0.6.2',
+    'r': '3.4.2'
 }
 
 # Fix Python 2.x input.
@@ -114,6 +115,25 @@ def installJulia(globalstate):
     replaceUsernameInExamples()
 
     globalstate['julia'] = supportedpackages['julia']
+    return globalstate
+
+# Install R.
+def installR(globalstate):
+    if 'python' not in globalstate['installed']:
+        globalstate = installPython(globalstate)
+        if 'python' not in globalstate['installed']:
+            print('Anaconda could not be installed, therefore I cannot install R')
+            return globalstate
+
+    print('Installing R...')
+
+    subprocess.call([home + '/anaconda/bin/conda', 'install', 'r-essentials', '-y'])
+
+    subprocess.call(['mkdir', '-p', home + '/slurm/examples/R'])
+    subprocess.call(['cp', '-R', scriptpath + '/env/slurm/examples/R', home + '/slurm/examples/'])
+    replaceUsernameInExamples()
+
+    globalstate['r'] = supportedpackages['r']
     return globalstate
 
 # Read in our environment's state.
