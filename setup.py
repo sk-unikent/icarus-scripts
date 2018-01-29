@@ -16,10 +16,11 @@ import subprocess
 home = os.path.expanduser("~")
 scriptpath = os.path.dirname(os.path.realpath(__file__))
 scriptvers = '2.0'
-basicenvvers = '0.2.0'
+basicenvvers = '0.2.1'
 supportedpackages = {
     'python': '3.6.4',
-    'tensorflow': '1.5.0'
+    'tensorflow': '1.5.0',
+    'julia': '0.6.2',
 }
 
 # Fix Python 2.x input.
@@ -53,6 +54,7 @@ def ensureBasicEnvironment(globalstate):
     subprocess.call(['mkdir', '-p', home + '/.config/kent/shellext'])
     subprocess.call(['mkdir', '-p', home + '/slurm/logs'])
     subprocess.call(['mkdir', '-p', home + '/slurm/examples/basic'])
+    subprocess.call(['mkdir', '-p', home + '/.local/bin'])
 
     # Setup shell.
     subprocess.call(['cp', scriptpath + '/env/.bashrc', home + '/.bashrc'])
@@ -95,6 +97,23 @@ def installTensorflow(globalstate):
     replaceUsernameInExamples()
 
     globalstate['tensorflow'] = supportedpackages['tensorflow']
+    return globalstate
+
+# Install Julia.
+def installJulia(globalstate):
+    print('Installing Julia...')
+
+    subprocess.call(['mkdir', '-p', home + '/julia'])
+    subprocess.call(['tar', 'xzvf', '/opt/icarus/pkg/julia-0.6.2-linux-x86_64.tar.gz', '-C', home + '/julia'])
+    subprocess.call(['ln', '-s', home + '/julia/julia-d386e40c17', home + '/julia/current'])
+    subprocess.call(['ln', '-s', home + '/julia/julia-d386e40c17/bin/julia', home + '/.local/bin/julia062'])
+    subprocess.call(['cp', scriptpath + '/env/.bash_julia', home + '/.config/kent/shellext/'])
+
+    subprocess.call(['mkdir', '-p', home + '/slurm/examples/julia'])
+    subprocess.call(['cp', '-R', scriptpath + '/env/slurm/examples/julia', home + '/slurm/examples/'])
+    replaceUsernameInExamples()
+
+    globalstate['julia'] = supportedpackages['julia']
     return globalstate
 
 # Read in our environment's state.

@@ -10,6 +10,6 @@ PATH=$HOME/.local/bin:$HOME/bin:$PATH
 export PATH
 
 # For our other stuff.
-for file in ~/.config/kent/shellext/*; do
+for file in ~/.config/kent/shellext/.bash_*; do
     [ -f "$file" ] && source "$file"
 done
