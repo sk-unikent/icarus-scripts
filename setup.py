@@ -5,6 +5,8 @@
 #
 
 import os
+import pwd
+import glob
 import json
 import shutil
 import readline
@@ -36,13 +38,9 @@ def resetEnvironment(globalstate):
 
 # Replace username in template files.
 def replaceUsernameInExamples():
-    # TODO.
-    # USERNAME=`logname`
-    # cp -R /opt/icarus/env/* ~/
-    # sed -i "s/USERNAME/$USERNAME/g" ~/slurm/examples/cpu.sh
-    # sed -i "s/USERNAME/$USERNAME/g" ~/slurm/examples/gpu.sh
-    # sed -i "s/USERNAME/$USERNAME/g" ~/slurm/examples/tensorflow.sh
-    return
+    username = pwd.getpwuid(os.getuid())[0]
+    for filename in glob.glob(home + '/slurm/examples/*/*.sh'):
+        subprocess.call(['sed', '-i', "s/USERNAME/%s/g" % username, filename])
 
 # Basic Kent environment setup.
 def ensureBasicEnvironment(globalstate):
