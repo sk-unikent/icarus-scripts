@@ -1,0 +1,3 @@
+# Checks for global environment updates.
+
+python /opt/icarus/check.py

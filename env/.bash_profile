@@ -5,8 +5,11 @@ if [ -f ~/.bashrc ]; then
 	. ~/.bashrc
 fi
 
-# User specific environment and startup programs
-
-PATH=$HOME/.local/bin:$HOME/anaconda/bin:$HOME/bin:$PATH
-
+# Add local bin paths.
+PATH=$HOME/.local/bin:$HOME/bin:$PATH
 export PATH
+
+# For our other stuff.
+for file in ~/.config/kent/shellext/.bash_*; do
+    [ -f "$file" ] && source "$file"
+done

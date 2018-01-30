@@ -1,0 +1,4 @@
+# .bashrc for python
+
+PATH=$HOME/anaconda/bin:$PATH
+export PATH
