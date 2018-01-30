@@ -146,7 +146,7 @@ def installR(globalstate):
     subprocess.call(['cp', '-R', scriptpath + '/env/slurm/examples/R', home + '/slurm/examples/'])
     replaceUsernameInExamples()
 
-    globalstate['r'] = supportedpackages['r']
+    globalstate['installed']['r'] = supportedpackages['r']
     return globalstate
 
 # Read in our environment's state.
