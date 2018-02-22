@@ -194,6 +194,9 @@ def runInit():
     while answer not in options.keys():
         try: answer = int(input('> '))
         except ValueError: pass
+        except KeyboardInterrupt:
+            print("Quitting...")
+            exit()
 
     # Check the answer.
     if answer not in options:
