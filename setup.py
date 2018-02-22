@@ -163,21 +163,34 @@ def saveEnvState(state):
         os.mkdir(home + '/.config/kent')
     json.dump(state, open(home + '/.config/kent/env.json', 'w'))
 
-# Setup globals and ask the user what they want to do.
-def runInit():
-    # First, decide what we have already installed.
+# Returns options for a given package dict.
+def getPkgOptions(pkgs):
     globalstate = readEnvState()
-    installoptions = [pkg.title() for pkg in supportedpackages.keys() if pkg not in globalstate['installed'].keys()]
-    upgrades = [pkg.title() for pkg in globalstate['installed'].keys() if globalstate['installed'][pkg] != supportedpackages[pkg]]
+    installoptions = [pkg.title() for pkg in pkgs.keys() if pkg not in globalstate['installed'].keys()]
+    upgrades = [pkg.title() for pkg in globalstate['installed'].keys() if globalstate['installed'][pkg] != pkgs[pkg]]
 
-    # Build an options table.
-    i = 1
+    i = 0
     options = {}
     for pkg in upgrades:
         options[i] = {'name': pkg, 'type': 'Upgrade', 'command': "upgrade%s" % pkg}
         i += 1
     for pkg in installoptions:
         options[i] = {'name': pkg, 'type': 'Install', 'command': "install%s" % pkg}
+        i += 1
+
+    return options
+
+# Setup globals and ask the user what they want to do.
+def runInit():
+    # First, decide what we have already installed.
+    globalstate = readEnvState()
+
+    # Build an options table.
+    i = 1
+    options = {}
+    suppopts = getPkgOptions(supportedpackages)
+    for pkg in suppopts:
+        options[i] = suppopts[pkg]
         i += 1
 
     options[i] = {'name': 'environment', 'type': 'Reset', 'command': "resetEnvironment"}
