@@ -1,6 +1,6 @@
 #
 # New Icarus setup script.
-# Version: 2.0
+# Version: 2.1
 # Author: Skylar Kelty
 #
 
@@ -17,11 +17,20 @@ home = os.path.expanduser("~")
 scriptpath = os.path.dirname(os.path.realpath(__file__))
 scriptvers = '2.0'
 supportedpackages = {
-    'base': '0.2.2',
+    'base': '0.2.3',
     'python': '3.6.4',
     'tensorflow': '1.5.0',
     'julia': '0.6.2',
     'r': '3.4.2'
+}
+
+bioscience_packages = {
+    'bwa': '0.7.12',
+    'picard-tools': '2.17',
+    'samtools': '1.2',
+    'bcftools': '3.4.2',
+    'ensembl-vep (GRCh37)': '91.3',
+    'htslib': '1.7'
 }
 
 # Fix Python 2.x input.
@@ -52,6 +61,11 @@ def upgradeBase(globalstate):
         # Add new upgrade check script.
         subprocess.call(['cp', scriptpath + '/env/.bash_updates', home + '/.config/kent/shellext/'])
 
+    if globalstate['installed']['base'] < '0.2.3':
+        subprocess.call(['mkdir', '-p', home + '/.local/lib'])
+        subprocess.call(['mkdir', '-p', home + '/.local/include'])
+        subprocess.call(['mkdir', '-p', home + '/.local/share'])
+
     globalstate['installed']['base'] = supportedpackages['base']
     return globalstate
 
@@ -69,6 +83,9 @@ def installBase(globalstate):
     subprocess.call(['mkdir', '-p', home + '/slurm/logs'])
     subprocess.call(['mkdir', '-p', home + '/slurm/examples/basic'])
     subprocess.call(['mkdir', '-p', home + '/.local/bin'])
+    subprocess.call(['mkdir', '-p', home + '/.local/lib'])
+    subprocess.call(['mkdir', '-p', home + '/.local/include'])
+    subprocess.call(['mkdir', '-p', home + '/.local/share'])
 
     # Setup shell.
     subprocess.call(['cp', scriptpath + '/env/.bashrc', home + '/.bashrc'])
@@ -149,6 +166,50 @@ def installR(globalstate):
     globalstate['installed']['r'] = supportedpackages['r']
     return globalstate
 
+# Install BWA.
+def installBwa(globalstate):
+    print('Installing BWA...')
+
+    subprocess.call(['cp', scriptpath + '/pkg/biosciences/bwa/bwa', home + '/.local/bin/'])
+
+    globalstate['installed']['bwa'] = bioscience_packages['bwa']
+    return globalstate
+
+# Install picard-tools.
+def installPicardTools(globalstate):
+    print('Installing Picard-Tools...')
+
+    subprocess.call(['cp', scriptpath + '/pkg/biosciences/picard-tools/picard-2.17.10-6-g6a44477-SNAPSHOT-all.jar', home + '/.local/lib/'])
+    subprocess.call(['ln', '-s', home + '/.local/lib/picard-2.17.10-6-g6a44477-SNAPSHOT-all.jar', home + '/.local/lib/picard.jar'])
+    subprocess.call(['cp', scriptpath + '/env/.bash_picard', home + '/.config/kent/shellext/'])
+
+    globalstate['installed']['picard-tools'] = bioscience_packages['picard-tools']
+    return globalstate
+
+# Install HTS Lib.
+def installHtslib(globalstate):
+    print('Installing HTSLib...')
+
+    subprocess.call(['tar', '-xf', scriptpath + '/pkg/biosciences/htslib/htslib.tar.xz', '-C', home + '/.local/'])
+
+    globalstate['installed']['htslib'] = bioscience_packages['htslib']
+    return globalstate
+
+# Install SamTools.
+def installSamtools(globalstate):
+    print('Installing SamTools...')
+
+    if 'htslib' not in globalstate['installed']:
+        globalstate = installHtslib(globalstate)
+        if 'htslib' not in globalstate['installed']:
+            print('HTSLib could not be installed, therefore I cannot install SamTools')
+            return globalstate
+
+    subprocess.call(['tar', '-xf', scriptpath + '/pkg/biosciences/samtools/samtools.tar.xz', '-C', home + '/.local/'])
+
+    globalstate['installed']['samtools'] = bioscience_packages['samtools']
+    return globalstate
+
 # Read in our environment's state.
 def readEnvState():
     if not os.path.isfile(home + '/.config/kent/env.json'):
@@ -163,11 +224,37 @@ def saveEnvState(state):
         os.mkdir(home + '/.config/kent')
     json.dump(state, open(home + '/.config/kent/env.json', 'w'))
 
+# Show a menu with options.
+def showMenu(message, options):
+    # Print out options.
+    print(message)
+    for i in options:
+        print(" %i) %s %s" % (i, options[i]['type'], options[i]['name']))
+
+    # Work out what we want to do.
+    answer = 99999
+    while answer not in options.keys():
+        try: answer = int(input('> '))
+        except ValueError: pass
+        except EOFError:
+            print('')
+            pass
+        except KeyboardInterrupt:
+            print("Quitting...")
+            exit()
+
+    # Check the answer.
+    if answer not in options:
+        return
+
+    return options[answer]
+
+
 # Returns options for a given package dict.
 def getPkgOptions(pkgs):
     globalstate = readEnvState()
-    installoptions = [pkg.title() for pkg in pkgs.keys() if pkg not in globalstate['installed'].keys()]
-    upgrades = [pkg.title() for pkg in globalstate['installed'].keys() if globalstate['installed'][pkg] != pkgs[pkg]]
+    installoptions = [pkg.title().replace('-', '') for pkg in pkgs.keys() if pkg not in globalstate['installed'].keys()]
+    upgrades = [pkg.title().replace('-', '') for pkg in globalstate['installed'].keys() if pkg in pkgs and globalstate['installed'][pkg] != pkgs[pkg]]
 
     i = 0
     options = {}
@@ -180,55 +267,19 @@ def getPkgOptions(pkgs):
 
     return options
 
-# Setup globals and ask the user what they want to do.
-def runInit():
-    # First, decide what we have already installed.
-    globalstate = readEnvState()
+# Process response.
+def processMenuResponse(globalstate, answer):
+    command = answer['command']
 
-    # Build an options table.
-    i = 1
-    options = {}
-    suppopts = getPkgOptions(supportedpackages)
-    for pkg in suppopts:
-        options[i] = suppopts[pkg]
-        i += 1
-
-    options[i] = {'name': 'environment', 'type': 'Reset', 'command': "resetEnvironment"}
-    i += 1
-    options[i] = {'name': ' ', 'type': 'Quit', 'command': "quit"}
-
-    # Print out options.
-    print('Welcome to Icarus! What would you like to do?')
-    for i in options:
-        print(" %i) %s %s" % (i, options[i]['type'], options[i]['name']))
-
-    # Work out what we want to do.
-    answer = 99999
-    while answer not in options.keys():
-        try: answer = int(input('> '))
-        except ValueError: pass
-        except KeyboardInterrupt:
-            print("Quitting...")
-            exit()
-
-    # Check the answer.
-    if answer not in options:
-        return
-
-    # Execute the command.
-    command = options[answer]['command']
     if command == 'resetEnvironment':
         # Reset the environment, better check first.
-        answer = input('Warning! This will delete everything in your home directory and you will not be able to get it back! are you sure? (yes/no) ')
-        if answer == 'yes':
+        checkresp = input('Warning! This will delete everything in your home directory and you will not be able to get it back! are you sure? (yes/no) ')
+        if checkresp == 'yes':
             globalstate = resetEnvironment(globalstate)
             saveEnvState(globalstate)
-            runInit()
-            return
-        else:
-            runInit()
-            return
-    elif options[answer]['type'] == 'Install' or options[answer]['type'] == 'Upgrade':
+        return globalstate
+
+    if answer['type'] == 'Install' or answer['type'] == 'Upgrade':
         # Make sure we always have the basic environment setup.
         globalstate = installBase(globalstate)
         saveEnvState(globalstate)
@@ -236,10 +287,62 @@ def runInit():
         # Now setup our tool.
         globalstate = globals()[command](globalstate)
         saveEnvState(globalstate)
+        return globalstate
 
-        # Back to the start!
-        runInit()
+    # Just run it, this should return a global state.
+    if command in globals():
+        return globals()[command](globalstate)
+
+    exit()
+
+# Setup globals and ask the user what they want to do.
+def showBiosciencesMenu(globalstate):
+    # Build an options table.
+    i = 1
+    options = {}
+
+    # Bioscience options.
+    suppopts = getPkgOptions(bioscience_packages)
+    for pkg in suppopts:
+        options[i] = suppopts[pkg]
+        i += 1
+
+    options[i] = {'name': 'Back', 'type': 'Go', 'command': "showMainMenu"}
+
+    # Print out options.
+    answer = showMenu('Bioscience packages', options)
+    if not answer:
         return
 
+    globalstate = processMenuResponse(globalstate, answer)
+    showBiosciencesMenu(globalstate)
+
+# Setup globals and ask the user what they want to do.
+def showMainMenu(globalstate):
+    # Build an options table.
+    i = 1
+    options = {}
+
+    # Core options.
+    suppopts = getPkgOptions(supportedpackages)
+    for pkg in suppopts:
+        options[i] = suppopts[pkg]
+        i += 1
+
+    options[i] = {'name': 'Biosciences', 'type': 'Show', 'command': "showBiosciencesMenu"}
+    i += 1
+    options[i] = {'name': 'environment', 'type': 'Reset', 'command': "resetEnvironment"}
+    i += 1
+    options[i] = {'name': ' ', 'type': 'Quit', 'command': "quit"}
+
+    # Print out options.
+    answer = showMenu('Welcome to Icarus! What would you like to do?', options)
+    if not answer:
+        return
+
+    globalstate = processMenuResponse(globalstate, answer)
+    showMainMenu(globalstate)
+
 if __name__ == '__main__':
-    runInit()
+    globalstate = readEnvState()
+    showMainMenu(globalstate)

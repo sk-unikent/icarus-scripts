@@ -1,0 +1,3 @@
+# .bashrc for Picard-Tools
+
+alias picard='java -jar ~/.local/lib/picard.jar'
