@@ -68,7 +68,7 @@ def upgradeBase(globalstate):
 
     if globalstate['installed']['base'] < '0.3.0':
         # Install Spack.
-        subprocess.call(['git', 'clone', 'https://github.com/spack/spack.git', home + '/.spack'])
+        subprocess.call(['git', 'clone', 'https://github.com/spack/spack.git', home + '/.spack-base'])
         subprocess.call(['cp', scriptpath + '/env/.bash_spack', home + '/.config/kent/shellext/'])
 
     globalstate['installed']['base'] = supportedpackages['base']

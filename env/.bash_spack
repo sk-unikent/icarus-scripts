@@ -1,3 +1,3 @@
 # .bashrc for spack
 
-source ~/.spack/share/spack/setup-env.sh
+source ~/.spack-base/share/spack/setup-env.sh
