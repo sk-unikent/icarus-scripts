@@ -70,6 +70,7 @@ def upgradeBase(globalstate):
         # Install Spack.
         subprocess.call(['git', 'clone', 'https://github.com/spack/spack.git', home + '/.spack-base'])
         subprocess.call(['cp', scriptpath + '/env/.bash_spack', home + '/.config/kent/shellext/'])
+        subprocess.call(['~/.spack-base/bin/spack', 'bootstrap'])
 
     globalstate['installed']['base'] = supportedpackages['base']
     return globalstate
@@ -88,15 +89,15 @@ def installBase(globalstate):
     subprocess.call(['mkdir', '-p', home + '/slurm/logs'])
     subprocess.call(['mkdir', '-p', home + '/slurm/examples/basic'])
     subprocess.call(['mkdir', '-p', home + '/.local/bin'])
-    subprocess.call(['mkdir', '-p', home + '/.local/lib'])
-    subprocess.call(['mkdir', '-p', home + '/.local/include'])
-    subprocess.call(['mkdir', '-p', home + '/.local/share'])
 
     # Setup shell.
     subprocess.call(['cp', scriptpath + '/env/.bashrc', home + '/.bashrc'])
     subprocess.call(['cp', scriptpath + '/env/.bash_profile', home + '/.bash_profile'])
     subprocess.call(['cp', '-R', scriptpath + '/env/slurm/examples/basic', home + '/slurm/examples/'])
     replaceUsernameInExamples()
+
+    globalstate['installed']['base'] = '0.2.0'
+    globalstate = upgradeBase(globalstate)
 
     globalstate['installed']['base'] = supportedpackages['base']
     return globalstate
