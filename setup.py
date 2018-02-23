@@ -17,7 +17,7 @@ home = os.path.expanduser("~")
 scriptpath = os.path.dirname(os.path.realpath(__file__))
 scriptvers = '2.0'
 supportedpackages = {
-    'base': '0.2.3',
+    'base': '0.3.0',
     'python': '3.6.4',
     'tensorflow': '1.5.0',
     'julia': '0.6.2',
@@ -65,6 +65,11 @@ def upgradeBase(globalstate):
         subprocess.call(['mkdir', '-p', home + '/.local/lib'])
         subprocess.call(['mkdir', '-p', home + '/.local/include'])
         subprocess.call(['mkdir', '-p', home + '/.local/share'])
+
+    if globalstate['installed']['base'] < '0.3.0':
+        # Install Spack.
+        subprocess.call(['git', 'clone', 'https://github.com/spack/spack.git', home + '/.spack'])
+        subprocess.call(['cp', scriptpath + '/env/.bash_spack', home + '/.config/kent/shellext/'])
 
     globalstate['installed']['base'] = supportedpackages['base']
     return globalstate
