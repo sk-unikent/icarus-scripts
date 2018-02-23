@@ -29,7 +29,7 @@ bioscience_packages = {
     'picard-tools': '2.17',
     'samtools': '1.2',
     'bcftools': '3.4.2',
-    'ensembl-vep (GRCh37)': '91.3',
+    'ensembl-vep': '91.3',
     'htslib': '1.7'
 }
 
@@ -208,6 +208,23 @@ def installSamtools(globalstate):
     subprocess.call(['tar', '-xf', scriptpath + '/pkg/biosciences/samtools/samtools.tar.xz', '-C', home + '/.local/'])
 
     globalstate['installed']['samtools'] = bioscience_packages['samtools']
+    return globalstate
+
+# Install ensembl-vep.
+def installEnsemblVep(globalstate):
+    print('Installing ensembl-vep...')
+
+    subprocess.call(['mkdir', '-p', home + '/.ensembl'])
+    subprocess.call(['tar', '-xzf', scriptpath + '/pkg/biosciences/ensembl-vep/91.3.tar.gz', '-C', home + '/.ensembl/'])
+    subprocess.call(['perl', '-xzf', home + '/.ensembl/ensembl-vep-release-91.3/INSTALL.pl',' --NO_HTSLIB', '--AUTO=a', '--QUIET'])
+    subprocess.call(['ln', '-s', home + '/.ensembl/ensembl-vep-release-91.3/vep', home + '/.local/bin/vep'])
+    subprocess.call(['ln', '-s', home + '/.ensembl/ensembl-vep-release-91.3/variant_recoder', home + '/.local/bin/variant_recoder'])
+    subprocess.call(['ln', '-s', home + '/.ensembl/ensembl-vep-release-91.3/haplo', home + '/.local/bin/haplo'])
+    subprocess.call(['ln', '-s', home + '/.ensembl/ensembl-vep-release-91.3/filter_vep', home + '/.local/bin/filter_vep'])
+
+    print('Ensembl-vep has been installed at ~/.ensembl.')
+
+    globalstate['installed']['ensembl-vep'] = bioscience_packages['ensembl-vep']
     return globalstate
 
 # Read in our environment's state.
