@@ -182,7 +182,7 @@ def upgradeR(globalstate):
         subprocess.call([home + '/anaconda/bin/conda', 'update', 'r-essentials', '-y'])
         subprocess.call(['cp', scriptpath + '/env/.Rprofile', home + '/.Rprofile'])
 
-    globalstate['installed']['base'] = supportedpackages['base']
+    globalstate['installed']['r'] = supportedpackages['r']
     return globalstate
 
 # Install BWA.
