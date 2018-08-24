@@ -21,7 +21,7 @@ supportedpackages = {
     'python': '3.6.4',
     'tensorflow': '1.5.0',
     'julia': '0.6.2',
-    'r': '3.4.2'
+    'r': '3.5.0'
 }
 
 bioscience_packages = {
@@ -165,11 +165,24 @@ def installR(globalstate):
 
     subprocess.call([home + '/anaconda/bin/conda', 'install', 'r-essentials', '-y'])
 
+    subprocess.call(['cp', scriptpath + '/env/.Rprofile', home + '/.Rprofile'])
+
     subprocess.call(['mkdir', '-p', home + '/slurm/examples/R'])
     subprocess.call(['cp', '-R', scriptpath + '/env/slurm/examples/R', home + '/slurm/examples/'])
     replaceUsernameInExamples()
 
     globalstate['installed']['r'] = supportedpackages['r']
+    return globalstate
+
+# R environment setup.
+def upgradeR(globalstate):
+    print('Upgrading R...')
+
+    if globalstate['installed']['base'] < '3.5.0':
+        subprocess.call([home + '/anaconda/bin/conda', 'update', 'r-essentials', '-y'])
+        subprocess.call(['cp', scriptpath + '/env/.Rprofile', home + '/.Rprofile'])
+
+    globalstate['installed']['base'] = supportedpackages['base']
     return globalstate
 
 # Install BWA.
