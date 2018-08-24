@@ -19,7 +19,7 @@ scriptvers = '2.0'
 supportedpackages = {
     'base': '0.3.0',
     'python': '3.6.4',
-    'tensorflow': '1.5.0',
+    'tensorflow': '1.10.1',
     'julia': '0.6.2',
     'r': '3.5.0'
 }
@@ -132,6 +132,16 @@ def installTensorflow(globalstate):
     subprocess.call(['mkdir', '-p', home + '/slurm/examples/tensorflow'])
     subprocess.call(['cp', '-R', scriptpath + '/env/slurm/examples/tensorflow', home + '/slurm/examples/'])
     replaceUsernameInExamples()
+
+    globalstate['installed']['tensorflow'] = supportedpackages['tensorflow']
+    return globalstate
+
+# Tensorflow environment setup.
+def upgradeTensorflow(globalstate):
+    print('Upgrading Tensorflow...')
+
+    if globalstate['installed']['base'] < '1.10.1':
+        subprocess.call([home + '/anaconda/bin/pip', 'install', '--upgrade', '/opt/icarus/pkg/tensorflow-1.10.1-cp36-cp36m-linux_x86_64.whl'])
 
     globalstate['installed']['tensorflow'] = supportedpackages['tensorflow']
     return globalstate
