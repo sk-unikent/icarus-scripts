@@ -1,7 +1,4 @@
 # .bashrc for Julia
 
-PATH=$HOME/julia/current/bin:$PATH
-export PATH
-
-LD_LIBRARY_PATH=$HOME/julia/current/lib:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH
+export PATH=$HOME/julia/current/bin:$PATH
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/julia/current/lib
